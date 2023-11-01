@@ -7,6 +7,7 @@ from . import genetic_algorithm, Parameters
 from .mutations import Mutation, ReciprocalExchangeMutation
 from .crossovers import Crossover, UniformCrossover
 from .selections import Selection, TournamentSelection
+from .evaluators import ExpectedCharFrequencyEvaluator
 
 parser = argparse.ArgumentParser(
     prog="Genetic Algorithm",
@@ -120,10 +121,11 @@ def main():
         mutation_rate=args.mutation_rate)
 
     solution = genetic_algorithm(
-        text, params,
+        params,
         crossover=crossover_algorithm(args.crossover_alg, random=rng),
         mutation=mutation_algorithm(args.mutation_alg, random=rng),
         selection=selection_algorithm(args.selection_alg, random=rng),
+        fitness=ExpectedCharFrequencyEvaluator(text),
         rng=rng)
 
     print(solution)
