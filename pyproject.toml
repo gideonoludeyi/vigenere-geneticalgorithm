@@ -6,7 +6,7 @@ authors = ["Gideon Oludeyi <go21zq@brocku.ca>"]
 readme = "README.md"
 
 [tool.poetry.scripts]
-geneticalgorithm = "geneticalgorithm:main"
+geneticalgorithm = "geneticalgorithm.__main__:main"
 
 [tool.poetry.dependencies]
 python = "^3.11"
