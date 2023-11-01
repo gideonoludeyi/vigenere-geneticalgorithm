@@ -102,7 +102,7 @@ def selection_algorithm(alg: str, random: Random) -> Selection:
         return TournamentSelection(k=2, random=random)
 
 
-def main():
+def main() -> int:
     args = parser.parse_args()
 
     if args.filepath is not None:
@@ -129,7 +129,8 @@ def main():
         rng=rng)
 
     print(solution)
+    return 0
 
 
 if __name__ == "__main__":
-    main()
+    sys.exit(main())
