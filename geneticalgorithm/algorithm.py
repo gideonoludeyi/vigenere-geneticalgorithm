@@ -2,9 +2,14 @@ from typing import Callable
 from string import ascii_lowercase
 from random import Random
 from dataclasses import dataclass
+from .mutations import Mutation
+from .crossovers import Crossover
+from .selections import Selection
 # from pprint import pprint
 
 GENES = tuple(ascii_lowercase + "-")
+
+DEFAULT_RNG = Random()
 
 
 @dataclass
@@ -14,11 +19,13 @@ class Parameters:
     max_generation_span: int
     crossover_rate: float
     mutation_rate: float
-    random_seed: int | None
 
 
-def genetic_algorithm(text: str, params: Parameters):
-    rng = Random(params.random_seed)
+def genetic_algorithm(text: str, params: Parameters, *,
+                      crossover: Crossover,
+                      mutation: Mutation,
+                      selection: Selection,
+                      rng: Random = DEFAULT_RNG) -> str:
 
     pop = initpopulation(params.initial_population_size,
                          params.chromosome_length,
@@ -26,19 +33,17 @@ def genetic_algorithm(text: str, params: Parameters):
 
     for gen in range(1, params.max_generation_span+1):
         # selection
-        pop = selection(pop,
-                        fitness=lambda chromosome: -fitness(chromosome, text),
-                        random=rng)
+        pop = selection(pop, fitness=lambda c: -fitness(c, text))
 
         # crossover
         for i in range(0, len(pop), 2):
             if rng.random() < params.crossover_rate:
-                pop[i], pop[i+1] = crossover(pop[i], pop[i+1], random=rng)
+                pop[i], pop[i+1] = crossover(pop[i], pop[i+1])
 
         # mutation
         for i in range(len(pop)):
             if rng.random() < params.mutation_rate:
-                pop[i] = mutate(pop[i], random=rng)
+                pop[i] = mutation(pop[i])
 
     # pprint(sorted([(chromosome, fitness(chromosome, text))
     #                for chromosome in pop], key=lambda x: x[1]))
@@ -72,35 +77,6 @@ def tournament_selection(population: list[str], *,
         selected = max(chromosomes, key=fitness)
         selections.append(selected)
     return selections
-
-
-def crossover(c1: str, c2: str, *, random: Random) -> tuple[str, str]:
-    return uniform_crossover(c1, c2, random=random)
-
-
-def uniform_crossover(p1: str, p2: str, *, random: Random) -> tuple[str, str]:
-    mask = random.getrandbits(len(p1))
-    c1 = []
-    c2 = []
-    for i in range(len(p1)):
-        if mask & (2**i) != 0:
-            c1.append(p1[i])
-            c2.append(p2[i])
-        else:
-            c1.append(p2[i])
-            c2.append(p1[i])
-    return ("".join(c1), "".join(c2))
-
-
-def mutate(chromosome: str, *, random: Random) -> str:
-    return reciprocal_exchange_mutation(chromosome, random=random)
-
-
-def reciprocal_exchange_mutation(chromosome: str, *, random: Random) -> str:
-    i, j = random.sample(range(len(chromosome)), k=2)
-    chars = list(chromosome)
-    chars[i], chars[j] = chars[j], chars[i]
-    return "".join(chars)
 
 
 def fitness(chromosome: str, encrypted: str) -> float:
