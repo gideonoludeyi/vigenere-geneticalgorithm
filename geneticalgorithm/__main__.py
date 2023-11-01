@@ -3,7 +3,7 @@ import argparse
 import pathlib
 from random import Random
 
-from .algorithm import genetic_algorithm, Parameters
+from . import genetic_algorithm, Parameters
 from .mutations import Mutation, ReciprocalExchangeMutation
 from .crossovers import Crossover, UniformCrossover
 from .selections import Selection, TournamentSelection
