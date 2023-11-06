@@ -1,5 +1,5 @@
 import abc
-from ..utils import decrypt
+from .utils import decrypt
 
 
 class Evaluator(abc.ABC):
