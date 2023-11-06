@@ -6,9 +6,9 @@ from .mutations import Mutation
 from .crossovers import Crossover
 from .selections import Selection
 from .evaluators import Evaluator
-# from pprint import pprint
 
-GENES = tuple(ascii_lowercase + "-")
+
+ALLELES = tuple(ascii_lowercase + "-")
 
 DEFAULT_RNG = Random()
 
@@ -46,35 +46,10 @@ def genetic_algorithm(params: Parameters, crossover: Crossover, *,
             if rng.random() < params.mutation_rate:
                 pop[i] = mutation(pop[i])
 
-    # pprint(sorted([(chromosome, fitness(chromosome))
-    #                for chromosome in pop], key=lambda x: x[1]))
-
     return max(pop, key=lambda chromosome: -fitness(chromosome))
 
 
 def initpopulation(pop_size: int, chromosome_length: int, *,
                    random: Random) -> list[str]:
-    return ["".join(random.choices(GENES, k=chromosome_length))
+    return ["".join(random.choices(ALLELES, k=chromosome_length))
             for _ in range(pop_size)]
-
-
-def selection(population: list[str], *,
-              k: int = 3,
-              fitness: Callable[[str], float],
-              random: Random) -> list[str]:
-    return tournament_selection(population,
-                                k=k,
-                                fitness=fitness,
-                                random=random)
-
-
-def tournament_selection(population: list[str], *,
-                         k: int = 3,
-                         fitness: Callable[[str], float],
-                         random: Random) -> list[str]:
-    selections = []
-    for i in range(len(population)):
-        chromosomes = random.sample(population, k=k)
-        selected = max(chromosomes, key=fitness)
-        selections.append(selected)
-    return selections

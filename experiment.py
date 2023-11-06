@@ -2,16 +2,22 @@ import sys
 import argparse
 import pathlib
 from random import Random
+from pprint import pprint
 
-from . import genetic_algorithm, Parameters
-from .mutations import Mutation, ReciprocalExchangeMutation
-from .crossovers import Crossover, UniformCrossover, OrderCrossover
-from .selections import Selection, TournamentSelection, WithElitism
-from .evaluators import ExpectedCharFrequencyEvaluator
+from geneticalgorithm import genetic_algorithm, Parameters
+from geneticalgorithm.mutations import Mutation, ReciprocalExchangeMutation
+from geneticalgorithm.crossovers import Crossover, UniformCrossover
+from geneticalgorithm.evaluators import ExpectedCharFrequencyEvaluator
+from geneticalgorithm.selections import (
+    Selection,
+    TournamentSelection,
+    WithElitism
+)
+
 
 parser = argparse.ArgumentParser(
-    prog="Genetic Algorithm",
-    description="performs genetic algorithm")
+    prog="GA Experiment",
+    description="performs genetic algorithm experiment")
 
 parser.add_argument(
     "key_length",
@@ -24,20 +30,13 @@ parser.add_argument(
     help="filepath to the encrypted data. [default: read from stdin]",
     type=pathlib.Path)
 parser.add_argument(
-    "-c", "--crossover-rate",
-    dest="crossover_rate",
-    help="Crossover rate [default: 0.5]",
-    type=float,
-    default=0.5)
-parser.add_argument(
     "--crossover-alg",
     dest="crossover_alg",
     help="""Crossover algorithm: [default: ux]
     ux - Uniform crossover
-    ox - Order crossover
     """,
     type=str,
-    choices=("ux", "ox"),
+    choices=("ux",),
     default="ux")
 parser.add_argument(
     "--mutation-alg",
@@ -57,12 +56,6 @@ parser.add_argument(
     type=str,
     choices=("tour2", "tour3", "tour4", "tour5"),
     default="tour2")
-parser.add_argument(
-    "-m", "--mutation-rate",
-    dest="mutation_rate",
-    help="Mutation rate [default: 0.5]",
-    type=float,
-    default=0.5)
 parser.add_argument(
     "-p", "--population-size",
     dest="initial_population_size",
@@ -98,8 +91,8 @@ def mutation_algorithm(alg: str, random: Random) -> Mutation:
 
 
 def crossover_algorithm(alg: str, random: Random) -> Crossover:
-    if alg == "ox":
-        return OrderCrossover(random=random)
+    if alg == "ux":
+        return UniformCrossover(random=random)
     else:
         return UniformCrossover(random=random)
 
@@ -112,6 +105,14 @@ def selection_algorithm(alg: str, random: Random) -> Selection:
         return TournamentSelection(k=2, random=random)
 
 
+CONFIGS = [
+    dict(crossover=1.0, mutation=0.0),
+    dict(crossover=1.0, mutation=0.1),
+    dict(crossover=0.9, mutation=0.0),
+    dict(crossover=0.9, mutation=0.1),
+]
+
+
 def main() -> int:
     args = parser.parse_args()
 
@@ -121,29 +122,33 @@ def main() -> int:
     else:
         text = "".join(sys.stdin)
 
-    rng = Random(args.random_seed)
+    results = []
+    for config in CONFIGS:
+        rng = Random(args.random_seed)
 
-    params = Parameters(
-        chromosome_length=args.key_length,
-        initial_population_size=args.initial_population_size,
-        max_generation_span=args.max_generations,
-        crossover_rate=args.crossover_rate,
-        mutation_rate=args.mutation_rate)
+        params = Parameters(
+            chromosome_length=args.key_length,
+            initial_population_size=args.initial_population_size,
+            max_generation_span=args.max_generations,
+            crossover_rate=config["crossover"],
+            mutation_rate=config["mutation"])
 
-    selection = WithElitism(
-        selection_algorithm(args.selection_alg, random=rng),
-        random=rng,
-        n_elites=args.n_elites)
+        selection = WithElitism(
+            selection_algorithm(args.selection_alg, random=rng),
+            random=rng,
+            n_elites=args.n_elites)
 
-    solution = genetic_algorithm(
-        params,
-        crossover=crossover_algorithm(args.crossover_alg, random=rng),
-        mutation=mutation_algorithm(args.mutation_alg, random=rng),
-        selection=selection,
-        fitness=ExpectedCharFrequencyEvaluator(text),
-        rng=rng)
+        solution = genetic_algorithm(
+            params,
+            crossover=crossover_algorithm(args.crossover_alg, random=rng),
+            mutation=mutation_algorithm(args.mutation_alg, random=rng),
+            selection=selection,
+            fitness=ExpectedCharFrequencyEvaluator(text),
+            rng=rng)
 
-    print(solution)
+        results.append((params, solution))
+
+    pprint(results)
     return 0
 
 
