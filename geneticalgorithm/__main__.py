@@ -50,12 +50,12 @@ parser.add_argument(
 parser.add_argument(
     "--selection-alg",
     dest="selection_alg",
-    help="""Selection algorithm: [default: tour]
-    tour - Tournament selection
+    help="""Selection algorithm: [default: tour2]
+    tour{k} - Tournament selection
     """,
     type=str,
-    choices=("tour",),
-    default="tour")
+    choices=("tour2", "tour3", "tour4", "tour5"),
+    default="tour2")
 parser.add_argument(
     "-m", "--mutation-rate",
     dest="mutation_rate",
@@ -96,8 +96,9 @@ def crossover_algorithm(alg: str, random: Random) -> Crossover:
 
 
 def selection_algorithm(alg: str, random: Random) -> Selection:
-    if alg == "tour":
-        return TournamentSelection(k=2, random=random)
+    if alg.startswith("tour"):
+        k = int(alg.replace("tour", ""))
+        return TournamentSelection(k=k, random=random)
     else:
         return TournamentSelection(k=2, random=random)
 
