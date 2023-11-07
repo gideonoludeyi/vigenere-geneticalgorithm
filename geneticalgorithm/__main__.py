@@ -1,6 +1,7 @@
 import sys
 import argparse
 import pathlib
+from io import TextIOBase
 from random import Random
 
 from . import genetic_algorithm, Parameters
@@ -8,6 +9,13 @@ from .mutations import Mutation, ReciprocalExchangeMutation
 from .crossovers import Crossover, UniformCrossover, OrderCrossover
 from .selections import Selection, TournamentSelection, WithElitism
 from .evaluators import ExpectedCharFrequencyEvaluator
+from .printers import (
+    Printer,
+    SimplePrinter,
+    PrettyPrintPrinter,
+    CsvPrinter,
+    TablePrinter
+)
 
 parser = argparse.ArgumentParser(
     prog="Genetic Algorithm",
@@ -76,6 +84,18 @@ parser.add_argument(
     type=int,
     default=20)
 parser.add_argument(
+    "-o", "--output-format",
+    dest="output_format",
+    help="""How to format output [default: simple]
+      simple - SimplePrinter
+      pp - PrettyPrintPrinter
+      csv - CsvPrinter
+      tbl - TablePrinter
+    """,
+    type=str,
+    choices=("simple", "pp", "csv", "tbl"),
+    default="simple")
+parser.add_argument(
     "--elites",
     dest="n_elites",
     help="""Number of elites to preserve each generation [default: 3]
@@ -112,6 +132,17 @@ def selection_algorithm(alg: str, random: Random) -> Selection:
         return TournamentSelection(k=2, random=random)
 
 
+def output_printer(output_format: str, stream: TextIOBase = sys.stdout) -> Printer:
+    if output_format == "pp":
+        return PrettyPrintPrinter(stream)
+    elif output_format == "csv":
+        return CsvPrinter(stream)
+    elif output_format == "tbl":
+        return TablePrinter(stream)
+    else:
+        return SimplePrinter(stream)
+
+
 def main() -> int:
     args = parser.parse_args()
 
@@ -130,6 +161,9 @@ def main() -> int:
         crossover_rate=args.crossover_rate,
         mutation_rate=args.mutation_rate)
 
+    crossover = crossover_algorithm(args.crossover_alg, random=rng)
+    mutation = mutation_algorithm(args.mutation_alg, random=rng)
+
     selection = WithElitism(
         selection_algorithm(args.selection_alg, random=rng),
         random=rng,
@@ -137,13 +171,15 @@ def main() -> int:
 
     solution = genetic_algorithm(
         params,
-        crossover=crossover_algorithm(args.crossover_alg, random=rng),
-        mutation=mutation_algorithm(args.mutation_alg, random=rng),
+        crossover=crossover,
+        mutation=mutation,
         selection=selection,
         fitness=ExpectedCharFrequencyEvaluator(text),
         rng=rng)
 
-    print(solution)
+    printer = output_printer(args.output_format, sys.stdout)
+    printer([(solution, params, crossover, mutation, selection)])
+
     return 0
 
 
