@@ -6,7 +6,7 @@ from pprint import pprint
 
 from geneticalgorithm import genetic_algorithm, Parameters
 from geneticalgorithm.mutations import Mutation, ReciprocalExchangeMutation
-from geneticalgorithm.crossovers import Crossover, UniformCrossover
+from geneticalgorithm.crossovers import Crossover, UniformCrossover, OrderCrossover
 from geneticalgorithm.evaluators import ExpectedCharFrequencyEvaluator
 from geneticalgorithm.selections import (
     Selection,
@@ -34,9 +34,10 @@ parser.add_argument(
     dest="crossover_alg",
     help="""Crossover algorithm: [default: ux]
     ux - Uniform crossover
+    ox - Order crossover
     """,
     type=str,
-    choices=("ux",),
+    choices=("ux", "ox"),
     default="ux")
 parser.add_argument(
     "--mutation-alg",
@@ -91,8 +92,8 @@ def mutation_algorithm(alg: str, random: Random) -> Mutation:
 
 
 def crossover_algorithm(alg: str, random: Random) -> Crossover:
-    if alg == "ux":
-        return UniformCrossover(random=random)
+    if alg == "ox":
+        return OrderCrossover(random=random)
     else:
         return UniformCrossover(random=random)
 
