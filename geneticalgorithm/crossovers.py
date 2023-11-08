@@ -4,6 +4,10 @@ from random import Random
 
 class Crossover(abc.ABC):
     @abc.abstractmethod
+    def name(self) -> str:
+        pass
+
+    @abc.abstractmethod
     def __call__(self, p1: str, p2: str) -> tuple[str, str]:
         pass
 
@@ -11,6 +15,9 @@ class Crossover(abc.ABC):
 class UniformCrossover(Crossover):
     def __init__(self, random: Random):
         self.random = random
+
+    def name(self) -> str:
+        return "Uniform Crossover"
 
     def __call__(self, p1: str, p2: str) -> tuple[str, str]:
         mask = self.random.getrandbits(len(p1))
@@ -29,6 +36,9 @@ class UniformCrossover(Crossover):
 class OrderCrossover(Crossover):
     def __init__(self, random: Random):
         self.random = random
+
+    def name(self) -> str:
+        return "Order Crossover"
 
     def __call__(self, p1: str, p2: str) -> tuple[str, str]:
         i, j = self.random.sample(range(len(p1)), k=2)
