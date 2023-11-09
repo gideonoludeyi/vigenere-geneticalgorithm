@@ -98,11 +98,11 @@ parser.add_argument(
 parser.add_argument(
     "--elites",
     dest="n_elites",
-    help="""Number of elites to preserve each generation [default: 3]
+    help="""Number of elites to preserve each generation [default: 2]
      set `--elites=0` to disable elitism
     """,
     type=int,
-    default=5)
+    default=2)
 parser.add_argument(
     "-s", "--seed",
     dest="random_seed",
@@ -169,7 +169,7 @@ def main() -> int:
         random=rng,
         n_elites=args.n_elites)
 
-    solution = genetic_algorithm(
+    g = genetic_algorithm(
         params,
         crossover=crossover,
         mutation=mutation,
@@ -177,8 +177,13 @@ def main() -> int:
         fitness=ExpectedCharFrequencyEvaluator(text),
         rng=rng)
 
-    printer = output_printer(args.output_format, sys.stdout)
-    printer([(solution, params, crossover, mutation, selection)])
+    generations = list(g)
+    final_generation_fitness_map = generations[-1]
+    solution, fitness = max(final_generation_fitness_map.items(),
+                            key=lambda tup: -tup[1])
+
+    print(f"Best Solution: {solution}")
+    print(f"Best Fitness: {fitness}")
 
     return 0
 

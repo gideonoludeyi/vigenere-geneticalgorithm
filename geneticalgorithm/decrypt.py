@@ -2,7 +2,7 @@ import sys
 import argparse
 import pathlib
 
-from geneticalgorithm.utils import decrypt
+from .utils import decrypt
 
 
 parser = argparse.ArgumentParser(

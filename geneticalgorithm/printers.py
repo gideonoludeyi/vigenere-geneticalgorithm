@@ -3,7 +3,6 @@ import sys
 from io import TextIOBase
 import pprint
 import csv
-from tabulate import tabulate
 
 from . import Parameters
 
@@ -88,6 +87,10 @@ class CsvPrinter(Printer):
 
 class TablePrinter(Printer):
     def __init__(self, stream: TextIOBase | None = None):
+        """requires tabulate dependency installed"""
+        from tabulate import tabulate
+
+        self.tabulate = tabulate
         self.stream = stream or sys.stdout
         self.headers = [
             "Run",
@@ -126,4 +129,4 @@ class TablePrinter(Printer):
 
     def __call__(self, rows: list[Row]) -> None:
         table = [self._row(row) for row in rows]
-        print(tabulate(table, headers=self.headers))
+        print(self.tabulate(table, headers=self.headers))

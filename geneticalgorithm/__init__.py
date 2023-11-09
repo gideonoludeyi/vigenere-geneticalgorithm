@@ -62,3 +62,41 @@ def initpopulation(pop_size: int, chromosome_length: int, *,
                    random: Random) -> list[str]:
     return ["".join(random.choices(ALLELES, k=chromosome_length))
             for _ in range(pop_size)]
+
+
+def initpop(pop_size: int, chromosome_length: int, *,
+            random: Random) -> list[str]:
+    expected_frequencies = [
+        0.085,
+        0.016,
+        0.0316,
+        0.0387,
+        0.121,
+        0.0218,
+        0.0209,
+        0.0496,
+        0.0733,
+        0.0022,
+        0.0081,
+        0.0421,
+        0.0253,
+        0.0717,
+        0.0747,
+        0.0207,
+        0.001,
+        0.0633,
+        0.0673,
+        0.0894,
+        0.0268,
+        0.0106,
+        0.0183,
+        0.0019,
+        0.0172,
+        0.0011,
+    ]
+    nullchar_freq = 0.15  # frequency of "-" char
+
+    weights = [x/(1 + nullchar_freq)
+               for x in expected_frequencies + [nullchar_freq]]
+    return ["".join(random.choices(ALLELES, weights=weights, k=chromosome_length))
+            for _ in range(pop_size)]

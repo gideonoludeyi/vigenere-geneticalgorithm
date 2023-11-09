@@ -2,33 +2,40 @@ import sys
 import argparse
 import pathlib
 import json
+import contextlib
 from io import TextIOBase
 from random import Random
-from tqdm import tqdm
 from itertools import product
 
-from geneticalgorithm import genetic_algorithm, Parameters
-from geneticalgorithm.mutations import Mutation, ReciprocalExchangeMutation
-from geneticalgorithm.crossovers import (
+from . import genetic_algorithm, Parameters
+from .mutations import Mutation, ReciprocalExchangeMutation
+from .crossovers import (
     Crossover,
     UniformCrossover,
     OrderCrossover
 )
-from geneticalgorithm.evaluators import ExpectedCharFrequencyEvaluator
-from geneticalgorithm.selections import (
+from .evaluators import ExpectedCharFrequencyEvaluator
+from .selections import (
     Selection,
     TournamentSelection,
     WithElitism
 )
-from geneticalgorithm.printers import (
+from .printers import (
     Printer,
     SimplePrinter,
     PrettyPrintPrinter,
     CsvPrinter,
     TablePrinter
 )
-from geneticalgorithm.utils import decrypt
+from .utils import decrypt
 
+try:
+    from tqdm import tqdm
+except ImportError:
+    print("To see progress bar, install tqdm package", file=sys.stderr)
+
+    def tqdm(*args, **kwargs):
+        return contextlib.nullcontext()
 
 parser = argparse.ArgumentParser(
     prog="GA Experiment",
@@ -100,7 +107,8 @@ def selection_algorithm(alg: str, random: Random) -> Selection:
         return TournamentSelection(k=2, random=random)
 
 
-def output_printer(output_format: str, stream: TextIOBase = sys.stdout) -> Printer:
+def output_printer(output_format: str,
+                   stream: TextIOBase = sys.stdout) -> Printer:
     if output_format == "pp":
         return PrettyPrintPrinter(stream)
     elif output_format == "csv":
@@ -116,6 +124,8 @@ def main() -> int:
 
     with open(args.config) as f:
         config = json.load(f)
+
+    printer = output_printer(args.output_format, sys.stdout)
 
     steps = sum(
         len(config["seeds"]) * len(run["rates"]) *
@@ -176,7 +186,8 @@ def main() -> int:
 
                 fitnesses = dict()
                 for gen, fitnesses in enumerate(g, 1):
-                    progress.update(1)
+                    if progress is not None:
+                        progress.update(1)
 
                     solution, fitness = max(fitnesses.items(),
                                             key=lambda tup: -tup[1])
@@ -195,10 +206,9 @@ def main() -> int:
                         mutation_alg,
                         selection_alg))
 
-                solution, fitness = max(fitnesses.items(),
-                                        key=lambda tup: -tup[1])
-
                 if args.verbose:
+                    solution, fitness = max(fitnesses.items(),
+                                            key=lambda tup: -tup[1])
                     print(
                         dict(
                             solution=solution,
@@ -208,7 +218,6 @@ def main() -> int:
 
                 run += 1
 
-    printer = output_printer(args.output_format, sys.stdout)
     printer(results)
 
     return 0
