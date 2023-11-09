@@ -45,7 +45,10 @@ notebook = ["ipywidgets (>=6)"]
 slack = ["slack-sdk"]
 telegram = ["requests"]
 
+[extras]
+all = ["tabulate", "tqdm"]
+
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.11"
-content-hash = "12a67f0b37357b9af595602e345056737b0df4fe71746b97dfa61bf42ea1aef9"
+content-hash = "8ae1d345c305497b77c6ee0c7a06ef126b9266fffc6b960e33bfc509b2909358"
