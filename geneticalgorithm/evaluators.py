@@ -3,12 +3,15 @@ from .utils import decrypt
 
 
 class Evaluator(abc.ABC):
+    """base class for evaluators"""
     @abc.abstractmethod
     def __call__(self, chromosome: str) -> float:
         pass
 
 
 class ExpectedCharFrequencyEvaluator(Evaluator):
+    """python implementation of fitness function provided in Evaluation.java"""
+
     def __init__(self, encrypted: str):
         self.encrypted = encrypted
 

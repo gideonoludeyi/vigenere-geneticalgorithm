@@ -1,4 +1,7 @@
 def decrypt(key: str, cipher: str) -> str:
+    """python implementation of decryption algorithm
+    provided in Evaluation.java
+    """
     # sanitize cipher text and key
     cipher = cipher.lower()
     cipher = cipher.replace(r"[^a-z]", "")

@@ -6,7 +6,8 @@ from .utils import decrypt
 
 
 parser = argparse.ArgumentParser(
-    prog="Decrypt")
+    prog="Decrypt",
+    description="decrypts the cipher from the file using the provided key")
 
 parser.add_argument(
     "key",

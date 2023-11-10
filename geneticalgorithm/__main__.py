@@ -1,7 +1,6 @@
 import sys
 import argparse
 import pathlib
-from io import TextIOBase
 from random import Random
 
 from . import genetic_algorithm, Parameters, ALLELES
@@ -13,13 +12,6 @@ from .mutations import (
 from .crossovers import Crossover, UniformCrossover, OrderCrossover
 from .selections import Selection, TournamentSelection, WithElitism
 from .evaluators import ExpectedCharFrequencyEvaluator
-from .printers import (
-    Printer,
-    SimplePrinter,
-    PrettyPrintPrinter,
-    CsvPrinter,
-    TablePrinter
-)
 
 parser = argparse.ArgumentParser(
     prog="Genetic Algorithm",
@@ -116,6 +108,9 @@ parser.add_argument(
 
 
 def mutation_algorithm(alg: str, random: Random) -> Mutation:
+    """selects the mutation algorithm to use
+    based on provided CLI option
+    """
     if alg == "rc":
         return RandomCharacterMutation(alleles=ALLELES, random=random)
     else:
@@ -123,6 +118,9 @@ def mutation_algorithm(alg: str, random: Random) -> Mutation:
 
 
 def crossover_algorithm(alg: str, random: Random) -> Crossover:
+    """selects the crossover algorithm to use
+    based on provided CLI option
+    """
     if alg == "ox":
         return OrderCrossover(random=random)
     else:
@@ -130,22 +128,14 @@ def crossover_algorithm(alg: str, random: Random) -> Crossover:
 
 
 def selection_algorithm(alg: str, random: Random) -> Selection:
+    """selects the selection algorithm to use
+    based on provided CLI option
+    """
     if alg.startswith("tour"):
         k = int(alg.replace("tour", ""))
         return TournamentSelection(k=k, random=random)
     else:
         return TournamentSelection(k=2, random=random)
-
-
-def output_printer(output_format: str, stream: TextIOBase = sys.stdout) -> Printer:
-    if output_format == "pp":
-        return PrettyPrintPrinter(stream)
-    elif output_format == "csv":
-        return CsvPrinter(stream)
-    elif output_format == "tbl":
-        return TablePrinter(stream)
-    else:
-        return SimplePrinter(stream)
 
 
 def main() -> int:
@@ -159,6 +149,7 @@ def main() -> int:
 
     rng = Random(args.random_seed)
 
+    # construct parameters
     params = Parameters(
         chromosome_length=args.key_length,
         initial_population_size=args.initial_population_size,
@@ -174,16 +165,22 @@ def main() -> int:
         random=rng,
         n_elites=args.n_elites)
 
+    # create genetic algorithm iterator
     g = genetic_algorithm(
         params,
         crossover=crossover,
         mutation=mutation,
         selection=selection,
+        # use default fitness function
         fitness=ExpectedCharFrequencyEvaluator(text),
         rng=rng)
 
+    # run the GA and get all generation fitness values
     generations = list(g)
+    # get the final set of fitness values
     final_generation_fitness_map = generations[-1]
+
+    # get the best solution and fitness value from final generation
     solution, fitness = max(final_generation_fitness_map.items(),
                             key=lambda tup: -tup[1])
 

@@ -70,6 +70,9 @@ parser.add_argument(
 
 
 def mutation_algorithm(alg: str, random: Random) -> Mutation:
+    """selects the mutation algorithm to use
+    based on provided configuration value
+    """
     if alg == "rc":
         return RandomCharacterMutation(alleles=ALLELES, random=random)
     else:
@@ -77,6 +80,9 @@ def mutation_algorithm(alg: str, random: Random) -> Mutation:
 
 
 def crossover_algorithm(alg: str, random: Random) -> Crossover:
+    """selects the crossover algorithm to use
+    based on provided configuration value
+    """
     if alg == "ox":
         return OrderCrossover(random=random)
     else:
@@ -84,6 +90,9 @@ def crossover_algorithm(alg: str, random: Random) -> Crossover:
 
 
 def selection_algorithm(alg: str, random: Random) -> Selection:
+    """selects the selection algorithm to use
+    based on provided configuration value
+    """
     if alg.startswith("tour"):
         k = int(alg.replace("tour", ""))
         return TournamentSelection(k=k, random=random)
@@ -93,6 +102,9 @@ def selection_algorithm(alg: str, random: Random) -> Selection:
 
 def output_printer(output_format: str,
                    stream: TextIOBase = sys.stdout) -> Printer:
+    """selects the output formatting implementation
+    to display the results based on provided CLI option
+    """
     if output_format == "pp":
         return PrettyPrintPrinter(stream)
     elif output_format == "csv":
@@ -111,20 +123,22 @@ def main() -> int:
 
     printer = output_printer(args.output_format, sys.stdout)
 
+    # compute number of steps required for experiment
+    # (for progress bar)
     steps = sum(
         len(config["seeds"]) * len(run["rates"]) *
         config["max_gen"] * len(run["crossover_algorithms"]) *
         len(run["mutation_algorithms"]) * len(run["selection_algorithms"])
         for run in config["runs"])
 
-    results = []
+    results = []  # list of data points (per generation)
     with tqdm(total=steps, ascii=True, leave=False) as progress:
         run = 1
         for spec in config["runs"]:
             with open(spec["file"]) as f:
                 text = f.read()
 
-            it = product(
+            it = product(  # all combination of parameters
                 config["seeds"],
                 spec["crossover_algorithms"],
                 spec["mutation_algorithms"],
@@ -132,6 +146,7 @@ def main() -> int:
                 spec["rates"])
             for seed, crossover_alg, mutation_alg, selection_alg, rate in it:
                 rng = Random(seed)
+                # construct parameters
                 params = Parameters(
                     chromosome_length=spec["key_length"],
                     initial_population_size=config["pop_size"],
@@ -146,41 +161,31 @@ def main() -> int:
                     random=rng,
                     n_elites=config["elites"])
 
-                if args.verbose:
-                    print(dict(
-                        random_seed=seed,
-                        crossover=crossover,
-                        datafile=spec["file"],
-                        crossover_rate=params.crossover_rate,
-                        mutation_rate=params.mutation_rate,
-                        n_chromosomes=params.initial_population_size,
-                        chromosome_max_length=params.chromosome_length,
-                        max_generation_span=params.max_generation_span,
-                    ))
-
+                # create genetic algorithm iterator
                 g = genetic_algorithm(
                     params,
                     crossover=crossover,
                     mutation=mutation,
                     selection=selection,
+                    # use default fitness function
                     fitness=ExpectedCharFrequencyEvaluator(text),
-                    rng=rng,
-                    verbose=args.verbose)
+                    rng=rng)
 
                 fitnesses = dict()
                 for gen, fitnesses in enumerate(g, 1):
                     if progress is not None:
                         progress.update(1)
 
-                    solution, fitness = max(fitnesses.items(),
-                                            key=lambda tup: -tup[1])
+                    best_solution, best_fit = max(fitnesses.items(),
+                                                  key=lambda tup: -tup[1])
                     avg_fitness = (sum(fitnesses.values()) /
                                    len(fitnesses.values()))
+                    # add run result to result dataset
                     results.append((
                         run,
                         gen,
-                        solution,
-                        fitness,
+                        best_solution,
+                        best_fit,
                         avg_fitness,
                         spec["file"],
                         seed,
@@ -189,18 +194,20 @@ def main() -> int:
                         mutation_alg,
                         selection_alg))
 
+                # display solution and decrypted cipher each run
                 if args.verbose:
-                    solution, fitness = max(fitnesses.items(),
-                                            key=lambda tup: -tup[1])
+                    best_solution, best_fit = max(fitnesses.items(),
+                                                  key=lambda tup: -tup[1])
                     print(
                         dict(
-                            solution=solution,
-                            fitness=fitness,
-                            decrypted=decrypt(solution, text)),
+                            solution=best_solution,
+                            fitness=best_fit,
+                            decrypted=decrypt(best_solution, text)),
                         end="\n\n")
 
                 run += 1
 
+    # output results in user-specified format
     printer(results)
 
     return 0

@@ -9,9 +9,7 @@ from .selections import Selection
 from .evaluators import Evaluator
 
 
-ALLELES = tuple(ascii_lowercase + "-")
-
-DEFAULT_RNG = Random()
+ALLELES = tuple(ascii_lowercase + "-")  # a-z and special "-" character
 
 
 @dataclass
@@ -27,14 +25,21 @@ def genetic_algorithm(params: Parameters, crossover: Crossover, *,
                       mutation: Mutation,
                       selection: Selection,
                       fitness: Evaluator,
-                      rng: Random = DEFAULT_RNG,
-                      verbose: bool = False,
+                      rng: Random,
                       ) -> Generator[dict[str, float], None, None]:
+    """implementation of the genetic algorithm
+    it takes the parameters as input, along with implementations
+    for the crossover, mutation, selection, and evaluation algorithms.
+
+    The result is an iterator that yields the list of fitness values for each generation,
+    allowing the calling the code to access the fitness values during each generation.
+    """
     pop = initpopulation(params.initial_population_size,
                          params.chromosome_length,
                          random=rng)
 
     for gen in range(1, params.max_generation_span+1):
+        # evaluate fitnesses
         fitnesses = {c: fitness(c) for c in pop}
 
         # selection
@@ -55,43 +60,7 @@ def genetic_algorithm(params: Parameters, crossover: Crossover, *,
 
 def initpopulation(pop_size: int, chromosome_length: int, *,
                    random: Random) -> list[str]:
+    """generates the initial population set for the genetic algorithm
+    """
     return ["".join(random.choices(ALLELES, k=chromosome_length))
-            for _ in range(pop_size)]
-
-
-def initpop(pop_size: int, chromosome_length: int, *,
-            random: Random) -> list[str]:
-    expected_frequencies = [
-        0.085,
-        0.016,
-        0.0316,
-        0.0387,
-        0.121,
-        0.0218,
-        0.0209,
-        0.0496,
-        0.0733,
-        0.0022,
-        0.0081,
-        0.0421,
-        0.0253,
-        0.0717,
-        0.0747,
-        0.0207,
-        0.001,
-        0.0633,
-        0.0673,
-        0.0894,
-        0.0268,
-        0.0106,
-        0.0183,
-        0.0019,
-        0.0172,
-        0.0011,
-    ]
-    nullchar_freq = 0.15  # frequency of "-" char
-
-    weights = [x/(1 + nullchar_freq)
-               for x in expected_frequencies + [nullchar_freq]]
-    return ["".join(random.choices(ALLELES, weights=weights, k=chromosome_length))
             for _ in range(pop_size)]
