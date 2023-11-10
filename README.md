@@ -41,5 +41,6 @@ Best Fitness: 0.30067272727272726
 ```sh
 $ .venv/bin/experiment --help
 $ .venv/bin/experiment sample.json -o csv
+$ .venv/bin/experiment sample.json -v     # display all outputs (including decrypted text)
 $ .venv/bin/experiment sample.json -o tbl # requires tabulate package to be installed
 ```

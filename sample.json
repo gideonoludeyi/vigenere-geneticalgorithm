@@ -8,7 +8,7 @@
       "file": "attachments/sample.txt",
       "key_length": 10,
       "crossover_algorithms": ["ux", "ox"],
-      "mutation_algorithms": ["rx"],
+      "mutation_algorithms": ["rx", "rc"],
       "selection_algorithms": ["tour2"],
       "rates": [
         {"crossover": 1.0, "mutation": 0.0},

@@ -29,15 +29,13 @@ def genetic_algorithm(params: Parameters, crossover: Crossover, *,
                       fitness: Evaluator,
                       rng: Random = DEFAULT_RNG,
                       verbose: bool = False,
-                      ) -> Generator[dict[str, float], None, tuple[str, float]]:
-
+                      ) -> Generator[dict[str, float], None, None]:
     pop = initpopulation(params.initial_population_size,
                          params.chromosome_length,
                          random=rng)
 
-    fitnesses = {c: fitness(c) for c in pop}
     for gen in range(1, params.max_generation_span+1):
-        yield fitnesses
+        fitnesses = {c: fitness(c) for c in pop}
 
         # selection
         pop = selection(pop, fitness=lambda c: -fitnesses[c])
@@ -52,10 +50,7 @@ def genetic_algorithm(params: Parameters, crossover: Crossover, *,
             if rng.random() < params.mutation_rate:
                 pop[i] = mutation(pop[i])
 
-        fitnesses = {c: fitness(c) for c in pop}
-
-    solution = max(pop, key=lambda chromosome: -fitnesses[chromosome])
-    return solution, fitnesses[solution]
+        yield fitnesses
 
 
 def initpopulation(pop_size: int, chromosome_length: int, *,

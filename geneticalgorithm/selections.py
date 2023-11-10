@@ -8,10 +8,6 @@ Fitness = Callable[[str], float]
 
 class Selection(abc.ABC):
     @abc.abstractmethod
-    def name(self) -> str:
-        pass
-
-    @abc.abstractmethod
     def __call__(self, population: list[str], fitness: Fitness) -> list[str]:
         pass
 
@@ -20,9 +16,6 @@ class TournamentSelection(Selection):
     def __init__(self, k: int, random: Random):
         self.k = k
         self.random = random
-
-    def name(self) -> str:
-        return f"Tournament Selection (k={self.k})"
 
     def __call__(self, population: list[str], fitness: Fitness) -> list[str]:
         selections = []
@@ -39,9 +32,6 @@ class WithElitism(Selection):
         self.selection = selection
         self.random = random
         self.n_elites = n_elites
-
-    def name(self) -> str:
-        return f"{self.selection.name()} + elitism (n=2)"
 
     def __call__(self, population: list[str], fitness: Fitness) -> list[str]:
         elites = sorted(population, key=fitness, reverse=True)[:self.n_elites]

@@ -1,6 +1,6 @@
 {
-  "pop_size": 50,
-  "max_gen": 100,
+  "pop_size": 100,
+  "max_gen": 200,
   "elites": 2,
   "seeds": [3, 7, 23, 43, 8019],
   "runs": [
@@ -8,7 +8,7 @@
       "file": "attachments/Data2.txt",
       "key_length": 40,
       "crossover_algorithms": ["ux", "ox"],
-      "mutation_algorithms": ["rx"],
+      "mutation_algorithms": ["rx", "rc"],
       "selection_algorithms": ["tour2"],
       "rates": [
         {"crossover": 1.0, "mutation": 0.0},

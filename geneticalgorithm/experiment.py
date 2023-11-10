@@ -7,8 +7,12 @@ from io import TextIOBase
 from random import Random
 from itertools import product
 
-from . import genetic_algorithm, Parameters
-from .mutations import Mutation, ReciprocalExchangeMutation
+from . import genetic_algorithm, Parameters, ALLELES
+from .mutations import (
+    Mutation,
+    ReciprocalExchangeMutation,
+    RandomCharacterMutation
+)
 from .crossovers import (
     Crossover,
     UniformCrossover,
@@ -86,8 +90,8 @@ parser.add_argument(
 
 
 def mutation_algorithm(alg: str, random: Random) -> Mutation:
-    if alg == "rx":
-        return ReciprocalExchangeMutation(random=random)
+    if alg == "rc":
+        return RandomCharacterMutation(alleles=ALLELES, random=random)
     else:
         return ReciprocalExchangeMutation(random=random)
 
@@ -179,8 +183,7 @@ def main() -> int:
                     crossover=crossover,
                     mutation=mutation,
                     selection=selection,
-                    fitness=ExpectedCharFrequencyEvaluator(
-                        text),
+                    fitness=ExpectedCharFrequencyEvaluator(text),
                     rng=rng,
                     verbose=args.verbose)
 

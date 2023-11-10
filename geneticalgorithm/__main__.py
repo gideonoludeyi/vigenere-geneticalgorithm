@@ -4,8 +4,12 @@ import pathlib
 from io import TextIOBase
 from random import Random
 
-from . import genetic_algorithm, Parameters
-from .mutations import Mutation, ReciprocalExchangeMutation
+from . import genetic_algorithm, Parameters, ALLELES
+from .mutations import (
+    Mutation,
+    ReciprocalExchangeMutation,
+    RandomCharacterMutation
+)
 from .crossovers import Crossover, UniformCrossover, OrderCrossover
 from .selections import Selection, TournamentSelection, WithElitism
 from .evaluators import ExpectedCharFrequencyEvaluator
@@ -52,9 +56,10 @@ parser.add_argument(
     dest="mutation_alg",
     help="""Mutation algorithm: [default: rx]
     rx - Reciprocal Exchange
+    rc - Random Character mutation
     """,
     type=str,
-    choices=("rx",),
+    choices=("rx", "rc"),
     default="rx")
 parser.add_argument(
     "--selection-alg",
@@ -111,8 +116,8 @@ parser.add_argument(
 
 
 def mutation_algorithm(alg: str, random: Random) -> Mutation:
-    if alg == "rx":
-        return ReciprocalExchangeMutation(random=random)
+    if alg == "rc":
+        return RandomCharacterMutation(alleles=ALLELES, random=random)
     else:
         return ReciprocalExchangeMutation(random=random)
 
