@@ -1,6 +1,9 @@
 # COSC 3P71 - A2
 Genetic algorithm assignment
 
+### Generated Data
+See `data/` directory
+
 ### Build
 1. Activate virtual environment
 ```sh
@@ -32,7 +35,13 @@ $ .venv/bin/experiment sample.json -v     # display all outputs (including decry
 $ .venv/bin/experiment sample.json -o tbl # requires tabulate package to be installed
 ```
 
-### Changing Parameters (geneticalgorithm)
+#### Reproducing data1.csv and data2.csv
+```sh
+$ .venv/bin/experiment data1.json -o csv > data1.csv
+$ .venv/bin/experiment data2.json -o csv > data2.csv
+```
+
+#### Changing Parameters (geneticalgorithm)
 To get the list of parameters that can be changed, use:
 ```sh
 $ .venv/bin/geneticalgorithm --help
@@ -48,7 +57,7 @@ Or the crossover and mutation rates:
 $ .venv/bin/geneticalgorithm 8 -f attachments/sample.txt -s 3 -c 0.8 -m 0.05
 ```
 
-### Changing Parameters (experiment)
+#### Changing Parameters (experiment)
 To change the experiment configurations, edit one of `data1.json`, `data2.json`, or `sample.json`.
 A sample configuration file looks like the following:
 ```json
