@@ -50,26 +50,6 @@ parser.add_argument(
     help="Path to configuration file for experiment runs",
     type=pathlib.Path)
 parser.add_argument(
-    "-p", "--population-size",
-    dest="initial_population_size",
-    help="Initial population size [default: 50]",
-    type=int,
-    default=50)
-parser.add_argument(
-    "-g", "--max-generations",
-    dest="max_generations",
-    help="Maximum number of generations [default: 20]",
-    type=int,
-    default=20)
-parser.add_argument(
-    "--elites",
-    dest="n_elites",
-    help="""Number of elites to preserve each generation [default: 2]
-     set `--elites=0` to disable elitism
-    """,
-    type=int,
-    default=2)
-parser.add_argument(
     "-o", "--output-format",
     dest="output_format",
     help="""How to format output [default: simple]

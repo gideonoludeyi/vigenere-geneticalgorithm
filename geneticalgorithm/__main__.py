@@ -38,9 +38,9 @@ parser.add_argument(
 parser.add_argument(
     "-c", "--crossover-rate",
     dest="crossover_rate",
-    help="Crossover rate [default: 0.5]",
+    help="Crossover rate [default: 0.9]",
     type=float,
-    default=0.5)
+    default=0.9)
 parser.add_argument(
     "--crossover-alg",
     dest="crossover_alg",
@@ -73,9 +73,9 @@ parser.add_argument(
 parser.add_argument(
     "-m", "--mutation-rate",
     dest="mutation_rate",
-    help="Mutation rate [default: 0.5]",
+    help="Mutation rate [default: 0.1]",
     type=float,
-    default=0.5)
+    default=0.1)
 parser.add_argument(
     "-p", "--population-size",
     dest="initial_population_size",
