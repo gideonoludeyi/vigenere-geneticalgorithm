@@ -5,7 +5,7 @@
 groups = ["default", "all"]
 strategy = ["cross_platform"]
 lock_version = "4.4"
-content_hash = "sha256:bf8b09f6c07d3636e848ded30ee613489bd59fd4eaef573b2e7c4ef60012251c"
+content_hash = "sha256:e7123db634ded1c80ba90be4144a1ecb322cc890a31c9727c2391bb51c7bd42a"
 
 [[package]]
 name = "colorama"
