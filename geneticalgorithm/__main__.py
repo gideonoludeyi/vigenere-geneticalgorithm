@@ -1,6 +1,5 @@
 import sys
 import argparse
-import pathlib
 from random import Random
 
 from . import genetic_algorithm, Parameters, ALLELES
@@ -18,9 +17,10 @@ parser.add_argument("key_length", help="Maximum length of key", type=int)
 parser.add_argument(
     "-f",
     "--file",
-    dest="filepath",
+    dest="inputfile",
     help="filepath to the encrypted data. [default: read from stdin]",
-    type=pathlib.Path,
+    type=argparse.FileType("r"),
+    default=sys.stdin,
 )
 parser.add_argument(
     "-c",
@@ -123,7 +123,7 @@ def mutation_algorithm(alg: str, random: Random) -> Mutation:
     based on provided CLI option
     """
     if alg == "rc":
-        return RandomCharacterMutation(alleles=ALLELES, random=random)
+        return RandomCharacterMutation(alleles=list(ALLELES), random=random)
     else:
         return ReciprocalExchangeMutation(random=random)
 
@@ -152,11 +152,8 @@ def selection_algorithm(alg: str, random: Random) -> Selection:
 def main() -> int:
     args = parser.parse_args()
 
-    if args.filepath is not None:
-        with open(args.filepath) as f:
-            text = f.read().strip()
-    else:
-        text = "".join(sys.stdin).strip()
+    with args.inputfile as f:
+        text = f.read().strip()
 
     rng = Random(args.random_seed)
 
