@@ -1,5 +1,5 @@
-# COSC 3P71 - A2
-Genetic algorithm assignment
+# Genetic Algorithm
+Implementation of a genetic algorithm to break Vigenère ciphers
 
 ### Generated Data
 See `data/` directory
@@ -8,53 +8,54 @@ See `data/` directory
 1. Activate virtual environment
 ```sh
 $ python -m venv .venv
+$ source ./.venv/bin/activate
 ```
 
 2. Build project
 ```sh
-$ .venv/bin/pip install build
-$ .venv/bin/python -m build
+$ pip install build
+$ python -m build
 ```
 
 3. Install project
 ```sh
-$ .venv/bin/pip install dist/geneticalgorithm-0.1.0-py3-none-any.whl
-$ .venv/bin/pip install tqdm tabulate # (optional) for progress bar and formatting output
+$ pip install dist/geneticalgorithm-0.1.0-py3-none-any.whl
+$ pip install tqdm tabulate # (optional) for progress bar and formatting output
 ```
 
 ### Usage
 #### Run Genetic Algorithm
 ```sh
-$ .venv/bin/geneticalgorithm 8 -f attachments/sample.txt -s 3
+$ geneticalgorithm 8 -f attachments/sample.txt -s 3
 ```
 
 #### Run experiment
 ```sh
-$ .venv/bin/experiment sample.json -o csv
-$ .venv/bin/experiment sample.json -v     # display all outputs (including decrypted text)
-$ .venv/bin/experiment sample.json -o tbl # requires tabulate package to be installed
+$ experiment sample.json -o csv
+$ experiment sample.json -v     # display all outputs (including decrypted text)
+$ experiment sample.json -o tbl # requires tabulate package to be installed
 ```
 
-#### Reproducing data1.csv and data2.csv
+#### Reproducing `data/data1.csv` and `data/data2.csv`
 ```sh
-$ .venv/bin/experiment data1.json -o csv > data1.csv
-$ .venv/bin/experiment data2.json -o csv > data2.csv
+$ experiment data1.json -o csv > data/data1.csv
+$ experiment data2.json -o csv > data/data2.csv
 ```
 
 #### Changing Parameters (geneticalgorithm)
 To get the list of parameters that can be changed, use:
 ```sh
-$ .venv/bin/geneticalgorithm --help
+$ geneticalgorithm --help
 ```
 
 For example, to change the crossover algorithm to Order Crossover (OX):
 ```sh
-$ .venv/bin/geneticalgorithm 8 -f attachments/sample.txt -s 3 --crossover-alg=ox
+$ geneticalgorithm 8 -f attachments/sample.txt -s 3 --crossover-alg=ox
 ```
 
 Or the crossover and mutation rates:
 ```sh
-$ .venv/bin/geneticalgorithm 8 -f attachments/sample.txt -s 3 -c 0.8 -m 0.05
+$ geneticalgorithm 8 -f attachments/sample.txt -s 3 -c 0.8 -m 0.05
 ```
 
 #### Changing Parameters (experiment)
@@ -84,7 +85,7 @@ A sample configuration file looks like the following:
 
 You can run the experiment with this configuration via:
 ```sh
-$ .venv/bin/experiment /path/to/config.json
+$ experiment /path/to/config.json
 ```
 
 For the sample configuration above, this will run the GA for every combination of random seeds, crossover algorithms, mutation algorithms, selection algorithms, and crossover rates.
