@@ -4,6 +4,7 @@ from random import Random
 
 class Crossover(abc.ABC):
     """base class for crossover operations"""
+
     @abc.abstractmethod
     def __call__(self, p1: str, p2: str) -> tuple[str, str]:
         pass

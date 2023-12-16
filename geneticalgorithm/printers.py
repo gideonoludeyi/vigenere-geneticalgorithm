@@ -12,7 +12,7 @@ Row = tuple[int, int, str, float, float, str, int, Parameters, str, str, str]
 
 
 class Printer(abc.ABC):
-    @ abc.abstractmethod
+    @abc.abstractmethod
     def __call__(self, rows: list[Row]) -> str:
         pass
 
@@ -37,7 +37,8 @@ class PrettyPrintPrinter(Printer):
                 params=row[7],
                 crossover=row[8],
                 mutation=row[9],
-                selection=row[10])
+                selection=row[10],
+            )
             pprint.pprint(obj, stream=self.stream)
 
 
@@ -66,22 +67,36 @@ class CsvPrinter(Printer):
         self.writer.writerow(self.headers)
 
         rows = [
-            (run,
-             gen,
-             file,
-             seed,
-             params.chromosome_length,
-             params.initial_population_size,
-             params.crossover_rate,
-             params.mutation_rate,
-             crossover,
-             mutation,
-             selection,
-             solution,
-             fitness,
-             avg_fit,
-             )
-            for (run, gen, solution, fitness, avg_fit, file, seed, params, crossover, mutation, selection) in rows]
+            (
+                run,
+                gen,
+                file,
+                seed,
+                params.chromosome_length,
+                params.initial_population_size,
+                params.crossover_rate,
+                params.mutation_rate,
+                crossover,
+                mutation,
+                selection,
+                solution,
+                fitness,
+                avg_fit,
+            )
+            for (
+                run,
+                gen,
+                solution,
+                fitness,
+                avg_fit,
+                file,
+                seed,
+                params,
+                crossover,
+                mutation,
+                selection,
+            ) in rows
+        ]
         self.writer.writerows(rows)
 
 
@@ -110,7 +125,19 @@ class TablePrinter(Printer):
         ]
 
     def _row(self, row: Row) -> tuple:
-        run, gen, sol, fit, avgfit, file, seed, params, crossover, mutation, selection = row
+        (
+            run,
+            gen,
+            sol,
+            fit,
+            avgfit,
+            file,
+            seed,
+            params,
+            crossover,
+            mutation,
+            selection,
+        ) = row
         return (
             run,
             gen,
@@ -125,7 +152,8 @@ class TablePrinter(Printer):
             selection,
             sol,
             fit,
-            avgfit)
+            avgfit,
+        )
 
     def __call__(self, rows: list[Row]) -> None:
         table = [self._row(row) for row in rows]

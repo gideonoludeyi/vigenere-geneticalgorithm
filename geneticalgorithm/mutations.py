@@ -4,6 +4,7 @@ from random import Random
 
 class Mutation(abc.ABC):
     """base class for mutation operations"""
+
     @abc.abstractmethod
     def __call__(self, c: str) -> str:
         pass

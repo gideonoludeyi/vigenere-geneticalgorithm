@@ -24,6 +24,16 @@ decrypt = "geneticalgorithm.decrypt:main"
 requires = ["pdm-backend"]
 build-backend = "pdm.backend"
 
+[tool.pdm]
+[tool.pdm.scripts]
+format = "ruff format ."
+lint = "ruff check ."
+
+[tool.pdm.dev-dependencies]
+dev = [
+    "ruff>=0.1.8",
+]
+
 [tool.pdm.build]
 includes = []
 

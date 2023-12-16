@@ -4,35 +4,32 @@ import pathlib
 from random import Random
 
 from . import genetic_algorithm, Parameters, ALLELES
-from .mutations import (
-    Mutation,
-    ReciprocalExchangeMutation,
-    RandomCharacterMutation
-)
+from .mutations import Mutation, ReciprocalExchangeMutation, RandomCharacterMutation
 from .crossovers import Crossover, UniformCrossover, OrderCrossover
 from .selections import Selection, TournamentSelection, WithElitism
 from .evaluators import ExpectedCharFrequencyEvaluator
 
 parser = argparse.ArgumentParser(
-    prog="Genetic Algorithm",
-    description="performs genetic algorithm")
+    prog="Genetic Algorithm", description="performs genetic algorithm"
+)
+
+parser.add_argument("key_length", help="Maximum length of key", type=int)
 
 parser.add_argument(
-    "key_length",
-    help="Maximum length of key",
-    type=int)
-
-parser.add_argument(
-    "-f", "--file",
+    "-f",
+    "--file",
     dest="filepath",
     help="filepath to the encrypted data. [default: read from stdin]",
-    type=pathlib.Path)
+    type=pathlib.Path,
+)
 parser.add_argument(
-    "-c", "--crossover-rate",
+    "-c",
+    "--crossover-rate",
     dest="crossover_rate",
     help="Crossover rate [default: 0.9]",
     type=float,
-    default=0.9)
+    default=0.9,
+)
 parser.add_argument(
     "--crossover-alg",
     dest="crossover_alg",
@@ -42,7 +39,8 @@ parser.add_argument(
     """,
     type=str,
     choices=("ux", "ox"),
-    default="ux")
+    default="ux",
+)
 parser.add_argument(
     "--mutation-alg",
     dest="mutation_alg",
@@ -52,7 +50,8 @@ parser.add_argument(
     """,
     type=str,
     choices=("rx", "rc"),
-    default="rx")
+    default="rx",
+)
 parser.add_argument(
     "--selection-alg",
     dest="selection_alg",
@@ -61,27 +60,35 @@ parser.add_argument(
     """,
     type=str,
     choices=("tour2", "tour3", "tour4", "tour5"),
-    default="tour2")
+    default="tour2",
+)
 parser.add_argument(
-    "-m", "--mutation-rate",
+    "-m",
+    "--mutation-rate",
     dest="mutation_rate",
     help="Mutation rate [default: 0.1]",
     type=float,
-    default=0.1)
+    default=0.1,
+)
 parser.add_argument(
-    "-p", "--population-size",
+    "-p",
+    "--population-size",
     dest="initial_population_size",
     help="Initial population size [default: 50]",
     type=int,
-    default=50)
+    default=50,
+)
 parser.add_argument(
-    "-g", "--max-generations",
+    "-g",
+    "--max-generations",
     dest="max_generations",
     help="Maximum number of generations [default: 20]",
     type=int,
-    default=20)
+    default=20,
+)
 parser.add_argument(
-    "-o", "--output-format",
+    "-o",
+    "--output-format",
     dest="output_format",
     help="""How to format output [default: simple]
       simple - SimplePrinter
@@ -91,7 +98,8 @@ parser.add_argument(
     """,
     type=str,
     choices=("simple", "pp", "csv", "tbl"),
-    default="simple")
+    default="simple",
+)
 parser.add_argument(
     "--elites",
     dest="n_elites",
@@ -99,12 +107,15 @@ parser.add_argument(
      set `--elites=0` to disable elitism
     """,
     type=int,
-    default=2)
+    default=2,
+)
 parser.add_argument(
-    "-s", "--seed",
+    "-s",
+    "--seed",
     dest="random_seed",
     help="Random seed for reproducibility [default: None]",
-    type=int)
+    type=int,
+)
 
 
 def mutation_algorithm(alg: str, random: Random) -> Mutation:
@@ -155,7 +166,8 @@ def main() -> int:
         initial_population_size=args.initial_population_size,
         max_generation_span=args.max_generations,
         crossover_rate=args.crossover_rate,
-        mutation_rate=args.mutation_rate)
+        mutation_rate=args.mutation_rate,
+    )
 
     crossover = crossover_algorithm(args.crossover_alg, random=rng)
     mutation = mutation_algorithm(args.mutation_alg, random=rng)
@@ -163,7 +175,8 @@ def main() -> int:
     selection = WithElitism(
         selection_algorithm(args.selection_alg, random=rng),
         random=rng,
-        n_elites=args.n_elites)
+        n_elites=args.n_elites,
+    )
 
     # create genetic algorithm iterator
     g = genetic_algorithm(
@@ -173,7 +186,8 @@ def main() -> int:
         selection=selection,
         # use default fitness function
         fitness=ExpectedCharFrequencyEvaluator(text),
-        rng=rng)
+        rng=rng,
+    )
 
     # run the GA and get all generation fitness values
     generations = list(g)
@@ -181,8 +195,9 @@ def main() -> int:
     final_generation_fitness_map = generations[-1]
 
     # get the best solution and fitness value from final generation
-    solution, fitness = max(final_generation_fitness_map.items(),
-                            key=lambda tup: -tup[1])
+    solution, fitness = max(
+        final_generation_fitness_map.items(), key=lambda tup: -tup[1]
+    )
 
     print(f"Best Solution: {solution}")
     print(f"Best Fitness: {fitness}")

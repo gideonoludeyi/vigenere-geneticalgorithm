@@ -4,6 +4,7 @@ from .utils import decrypt
 
 class Evaluator(abc.ABC):
     """base class for evaluators"""
+
     @abc.abstractmethod
     def __call__(self, chromosome: str) -> float:
         pass
@@ -46,7 +47,7 @@ class ExpectedCharFrequencyEvaluator(Evaluator):
         ]
 
         # decrypt each character
-        plain = [ord(i)-97 for i in decrypt(chromosome, self.encrypted)]
+        plain = [ord(i) - 97 for i in decrypt(chromosome, self.encrypted)]
 
         # count the occurrences of each character
         counts = [0] * 26

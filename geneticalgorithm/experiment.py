@@ -8,28 +8,16 @@ from random import Random
 from itertools import product
 
 from . import genetic_algorithm, Parameters, ALLELES
-from .mutations import (
-    Mutation,
-    ReciprocalExchangeMutation,
-    RandomCharacterMutation
-)
-from .crossovers import (
-    Crossover,
-    UniformCrossover,
-    OrderCrossover
-)
+from .mutations import Mutation, ReciprocalExchangeMutation, RandomCharacterMutation
+from .crossovers import Crossover, UniformCrossover, OrderCrossover
 from .evaluators import ExpectedCharFrequencyEvaluator
-from .selections import (
-    Selection,
-    TournamentSelection,
-    WithElitism
-)
+from .selections import Selection, TournamentSelection, WithElitism
 from .printers import (
     Printer,
     SimplePrinter,
     PrettyPrintPrinter,
     CsvPrinter,
-    TablePrinter
+    TablePrinter,
 )
 from .utils import decrypt
 
@@ -41,16 +29,17 @@ except ImportError:
     def tqdm(*args, **kwargs):
         return contextlib.nullcontext()
 
+
 parser = argparse.ArgumentParser(
-    prog="GA Experiment",
-    description="performs genetic algorithm experiment")
+    prog="GA Experiment", description="performs genetic algorithm experiment"
+)
 
 parser.add_argument(
-    "config",
-    help="Path to configuration file for experiment runs",
-    type=pathlib.Path)
+    "config", help="Path to configuration file for experiment runs", type=pathlib.Path
+)
 parser.add_argument(
-    "-o", "--output-format",
+    "-o",
+    "--output-format",
     dest="output_format",
     help="""How to format output [default: simple]
       simple - SimplePrinter
@@ -60,13 +49,16 @@ parser.add_argument(
     """,
     type=str,
     choices=("simple", "pp", "csv", "tbl"),
-    default="simple")
+    default="simple",
+)
 parser.add_argument(
-    "-v", "--verbose",
+    "-v",
+    "--verbose",
     dest="verbose",
     help="Whether to output all logs",
     action="store_true",
-    default=False)
+    default=False,
+)
 
 
 def mutation_algorithm(alg: str, random: Random) -> Mutation:
@@ -100,8 +92,7 @@ def selection_algorithm(alg: str, random: Random) -> Selection:
         return TournamentSelection(k=2, random=random)
 
 
-def output_printer(output_format: str,
-                   stream: TextIOBase = sys.stdout) -> Printer:
+def output_printer(output_format: str, stream: TextIOBase = sys.stdout) -> Printer:
     """selects the output formatting implementation
     to display the results based on provided CLI option
     """
@@ -126,10 +117,14 @@ def main() -> int:
     # compute number of steps required for experiment
     # (for progress bar)
     steps = sum(
-        len(config["seeds"]) * len(run["rates"]) *
-        config["max_gen"] * len(run["crossover_algorithms"]) *
-        len(run["mutation_algorithms"]) * len(run["selection_algorithms"])
-        for run in config["runs"])
+        len(config["seeds"])
+        * len(run["rates"])
+        * config["max_gen"]
+        * len(run["crossover_algorithms"])
+        * len(run["mutation_algorithms"])
+        * len(run["selection_algorithms"])
+        for run in config["runs"]
+    )
 
     results = []  # list of data points (per generation)
     with tqdm(total=steps, ascii=True, leave=False) as progress:
@@ -143,7 +138,8 @@ def main() -> int:
                 spec["crossover_algorithms"],
                 spec["mutation_algorithms"],
                 spec["selection_algorithms"],
-                spec["rates"])
+                spec["rates"],
+            )
             for seed, crossover_alg, mutation_alg, selection_alg, rate in it:
                 rng = Random(seed)
                 # construct parameters
@@ -152,14 +148,16 @@ def main() -> int:
                     initial_population_size=config["pop_size"],
                     max_generation_span=config["max_gen"],
                     crossover_rate=rate["crossover"],
-                    mutation_rate=rate["mutation"])
+                    mutation_rate=rate["mutation"],
+                )
 
                 crossover = crossover_algorithm(crossover_alg, random=rng)
                 mutation = mutation_algorithm(mutation_alg, random=rng)
                 selection = WithElitism(
                     selection_algorithm(selection_alg, random=rng),
                     random=rng,
-                    n_elites=config["elites"])
+                    n_elites=config["elites"],
+                )
 
                 # create genetic algorithm iterator
                 g = genetic_algorithm(
@@ -169,41 +167,48 @@ def main() -> int:
                     selection=selection,
                     # use default fitness function
                     fitness=ExpectedCharFrequencyEvaluator(text),
-                    rng=rng)
+                    rng=rng,
+                )
 
                 fitnesses = dict()
                 for gen, fitnesses in enumerate(g, 1):
                     if progress is not None:
                         progress.update(1)
 
-                    best_solution, best_fit = max(fitnesses.items(),
-                                                  key=lambda tup: -tup[1])
-                    avg_fitness = (sum(fitnesses.values()) /
-                                   len(fitnesses.values()))
+                    best_solution, best_fit = max(
+                        fitnesses.items(), key=lambda tup: -tup[1]
+                    )
+                    avg_fitness = sum(fitnesses.values()) / len(fitnesses.values())
                     # add run result to result dataset
-                    results.append((
-                        run,
-                        gen,
-                        best_solution,
-                        best_fit,
-                        avg_fitness,
-                        spec["file"],
-                        seed,
-                        params,
-                        crossover_alg,
-                        mutation_alg,
-                        selection_alg))
+                    results.append(
+                        (
+                            run,
+                            gen,
+                            best_solution,
+                            best_fit,
+                            avg_fitness,
+                            spec["file"],
+                            seed,
+                            params,
+                            crossover_alg,
+                            mutation_alg,
+                            selection_alg,
+                        )
+                    )
 
                 # display solution and decrypted cipher each run
                 if args.verbose:
-                    best_solution, best_fit = max(fitnesses.items(),
-                                                  key=lambda tup: -tup[1])
+                    best_solution, best_fit = max(
+                        fitnesses.items(), key=lambda tup: -tup[1]
+                    )
                     print(
                         dict(
                             solution=best_solution,
                             fitness=best_fit,
-                            decrypted=decrypt(best_solution, text)),
-                        end="\n\n")
+                            decrypted=decrypt(best_solution, text),
+                        ),
+                        end="\n\n",
+                    )
 
                 run += 1
 

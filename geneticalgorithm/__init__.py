@@ -21,12 +21,15 @@ class Parameters:
     mutation_rate: float
 
 
-def genetic_algorithm(params: Parameters, crossover: Crossover, *,
-                      mutation: Mutation,
-                      selection: Selection,
-                      fitness: Evaluator,
-                      rng: Random,
-                      ) -> Generator[dict[str, float], None, None]:
+def genetic_algorithm(
+    params: Parameters,
+    crossover: Crossover,
+    *,
+    mutation: Mutation,
+    selection: Selection,
+    fitness: Evaluator,
+    rng: Random,
+) -> Generator[dict[str, float], None, None]:
     """implementation of the genetic algorithm
     it takes the parameters as input, along with implementations
     for the crossover, mutation, selection, and evaluation algorithms.
@@ -34,11 +37,11 @@ def genetic_algorithm(params: Parameters, crossover: Crossover, *,
     The result is an iterator that yields the list of fitness values for each generation,
     allowing the calling the code to access the fitness values during each generation.
     """
-    pop = initpopulation(params.initial_population_size,
-                         params.chromosome_length,
-                         random=rng)
+    pop = initpopulation(
+        params.initial_population_size, params.chromosome_length, random=rng
+    )
 
-    for gen in range(1, params.max_generation_span+1):
+    for gen in range(1, params.max_generation_span + 1):
         # evaluate fitnesses
         fitnesses = {c: fitness(c) for c in pop}
 
@@ -48,7 +51,7 @@ def genetic_algorithm(params: Parameters, crossover: Crossover, *,
         # crossover
         for i in range(0, len(pop), 2):
             if rng.random() < params.crossover_rate:
-                pop[i], pop[i+1] = crossover(pop[i], pop[i+1])
+                pop[i], pop[i + 1] = crossover(pop[i], pop[i + 1])
 
         # mutation
         for i in range(len(pop)):
@@ -58,9 +61,10 @@ def genetic_algorithm(params: Parameters, crossover: Crossover, *,
         yield fitnesses
 
 
-def initpopulation(pop_size: int, chromosome_length: int, *,
-                   random: Random) -> list[str]:
-    """generates the initial population set for the genetic algorithm
-    """
-    return ["".join(random.choices(ALLELES, k=chromosome_length))
-            for _ in range(pop_size)]
+def initpopulation(
+    pop_size: int, chromosome_length: int, *, random: Random
+) -> list[str]:
+    """generates the initial population set for the genetic algorithm"""
+    return [
+        "".join(random.choices(ALLELES, k=chromosome_length)) for _ in range(pop_size)
+    ]
