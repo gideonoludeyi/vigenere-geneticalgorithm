@@ -1,23 +1,29 @@
-[tool.poetry]
+[project]
 name = "geneticalgorithm"
 version = "0.1.0"
 description = ""
-authors = ["Gideon Oludeyi <go21zq@brocku.ca>"]
+authors = [
+    {name = "Gideon Oludeyi", email = "go21zq@brocku.ca"},
+]
 readme = "README.md"
+requires-python = ">=3.11,<4.0"
+dependencies = []
 
-[tool.poetry.scripts]
+[project.optional-dependencies]
+all = [
+    "tabulate<1.0.0,>=0.9.0",
+    "tqdm<5.0.0,>=4.66.1",
+]
+
+[project.scripts]
 geneticalgorithm = "geneticalgorithm.__main__:main"
 experiment = "geneticalgorithm.experiment:main"
 decrypt = "geneticalgorithm.decrypt:main"
 
-[tool.poetry.dependencies]
-python = "^3.11"
-tabulate = {version = "^0.9.0", optional = true}
-tqdm = {version = "^4.66.1", optional = true}
-
-[tool.poetry.extras]
-all = ["tabulate", "tqdm"]
-
 [build-system]
-requires = ["poetry-core"]
-build-backend = "poetry.core.masonry.api"
+requires = ["pdm-backend"]
+build-backend = "pdm.backend"
+
+[tool.pdm.build]
+includes = []
+
