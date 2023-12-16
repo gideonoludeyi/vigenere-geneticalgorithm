@@ -1,4 +1,4 @@
-# Genetic Algorithm
+# Breaking Vigenère Ciphers /w Genetic Algorithm
 Implementation of a genetic algorithm to break Vigenère ciphers
 
 ### Generated Data

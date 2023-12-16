@@ -1,0 +1,1 @@
+This folder contains data files used in the experiment `.json` configurations. `Data1.txt` and `Data2.txt` are the encrypted text used in the experiments. Each of these text files contain a number at the beginning (either 26 or 40 depending on the file you are using) indicating the maximum length of the key. The remainder of the file is the encrypted text.
