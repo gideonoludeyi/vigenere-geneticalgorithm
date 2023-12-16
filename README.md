@@ -31,15 +31,15 @@ $ geneticalgorithm 8 -f attachments/sample.txt -s 3
 
 #### Run experiment
 ```sh
-$ experiment sample.json -o csv
-$ experiment sample.json -v     # display all outputs (including decrypted text)
-$ experiment sample.json -o tbl # requires tabulate package to be installed
+$ experiment config/sample.json -o csv
+$ experiment config/sample.json -v     # display all outputs (including decrypted text)
+$ experiment config/sample.json -o tbl # requires tabulate package to be installed
 ```
 
 #### Reproducing `data/data1.csv` and `data/data2.csv`
 ```sh
-$ experiment data1.json -o csv > data/data1.csv
-$ experiment data2.json -o csv > data/data2.csv
+$ experiment config/data1.json -o csv > data/data1.csv
+$ experiment config/data2.json -o csv > data/data2.csv
 ```
 
 #### Changing Parameters (geneticalgorithm)
