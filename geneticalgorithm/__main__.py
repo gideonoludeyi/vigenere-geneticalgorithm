@@ -143,9 +143,9 @@ def main() -> int:
 
     if args.filepath is not None:
         with open(args.filepath) as f:
-            text = f.read()
+            text = f.read().strip()
     else:
-        text = "".join(sys.stdin)
+        text = "".join(sys.stdin).strip()
 
     rng = Random(args.random_seed)
 
