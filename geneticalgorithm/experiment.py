@@ -1,33 +1,36 @@
-import sys
 import argparse
-import pathlib
+import concurrent.futures
 import json
-import contextlib
-from io import TextIOBase
-from random import Random
+import pathlib
+import sys
 from itertools import product
+from random import Random
+from typing import TextIO
 
-from . import genetic_algorithm, Parameters, ALLELES
-from .mutations import Mutation, ReciprocalExchangeMutation, RandomCharacterMutation
-from .crossovers import Crossover, UniformCrossover, OrderCrossover
+from . import ALLELES, Parameters, genetic_algorithm
+from .crossovers import Crossover, OrderCrossover, UniformCrossover
 from .evaluators import ExpectedCharFrequencyEvaluator
-from .selections import Selection, TournamentSelection, WithElitism
+from .mutations import Mutation, RandomCharacterMutation, ReciprocalExchangeMutation
 from .printers import (
+    CsvPrinter,
+    PrettyPrintPrinter,
     Printer,
     SimplePrinter,
-    PrettyPrintPrinter,
-    CsvPrinter,
     TablePrinter,
 )
+from .selections import Selection, TournamentSelection, WithElitism
 from .utils import decrypt
 
 try:
-    from tqdm import tqdm
+    from tqdm import tqdm as _tqdm
+
+    def tqdm(it, *args, **kwargs):
+        return _tqdm(it, *args, **kwargs)
 except ImportError:
     print("To see progress bar, install tqdm package", file=sys.stderr)
 
-    def tqdm(*args, **kwargs):
-        return contextlib.nullcontext()
+    def tqdm(it, *args, **kwargs):
+        return it
 
 
 parser = argparse.ArgumentParser(
@@ -66,7 +69,7 @@ def mutation_algorithm(alg: str, random: Random) -> Mutation:
     based on provided configuration value
     """
     if alg == "rc":
-        return RandomCharacterMutation(alleles=ALLELES, random=random)
+        return RandomCharacterMutation(alleles=list(ALLELES), random=random)
     else:
         return ReciprocalExchangeMutation(random=random)
 
@@ -92,7 +95,7 @@ def selection_algorithm(alg: str, random: Random) -> Selection:
         return TournamentSelection(k=2, random=random)
 
 
-def output_printer(output_format: str, stream: TextIOBase = sys.stdout) -> Printer:
+def output_printer(output_format: str, stream: TextIO = sys.stdout) -> Printer:
     """selects the output formatting implementation
     to display the results based on provided CLI option
     """
@@ -104,6 +107,83 @@ def output_printer(output_format: str, stream: TextIOBase = sys.stdout) -> Print
         return TablePrinter(stream)
     else:
         return SimplePrinter(stream)
+
+
+def single_run(
+    run: int,
+    seed: int,
+    spec: dict,
+    config: dict,
+    rate: dict,
+    crossover_alg: str,
+    mutation_alg: str,
+    selection_alg: str,
+    text: str,
+    verbose: bool,
+) -> list:
+    rng = Random(seed)
+    # construct parameters
+    params = Parameters(
+        chromosome_length=spec["key_length"],
+        initial_population_size=config["pop_size"],
+        max_generation_span=config["max_gen"],
+        crossover_rate=rate["crossover"],
+        mutation_rate=rate["mutation"],
+    )
+
+    crossover = crossover_algorithm(crossover_alg, random=rng)
+    mutation = mutation_algorithm(mutation_alg, random=rng)
+    selection = WithElitism(
+        selection_algorithm(selection_alg, random=rng),
+        random=rng,
+        n_elites=config["elites"],
+    )
+
+    # create genetic algorithm iterator
+    g = genetic_algorithm(
+        params,
+        crossover=crossover,
+        mutation=mutation,
+        selection=selection,
+        # use default fitness function
+        fitness=ExpectedCharFrequencyEvaluator(text),
+        rng=rng,
+    )
+
+    results = []
+    fitnesses = dict()
+    for gen, fitnesses in enumerate(g, 1):
+        best_solution, best_fit = max(fitnesses.items(), key=lambda tup: -tup[1])
+        avg_fitness = sum(fitnesses.values()) / len(fitnesses.values())
+        # add run result to result dataset
+        results.append(
+            (
+                run,
+                gen,
+                best_solution,
+                best_fit,
+                avg_fitness,
+                spec["file"],
+                seed,
+                params,
+                crossover_alg,
+                mutation_alg,
+                selection_alg,
+            )
+        )
+
+    # display solution and decrypted cipher each run
+    if verbose:
+        best_solution, best_fit = max(fitnesses.items(), key=lambda tup: -tup[1])
+        print(
+            dict(
+                solution=best_solution,
+                fitness=best_fit,
+                decrypted=decrypt(best_solution, text),
+            ),
+            end="\n\n",
+        )
+    return results
 
 
 def main() -> int:
@@ -118,16 +198,16 @@ def main() -> int:
     # (for progress bar)
     steps = sum(
         len(config["seeds"])
-        * len(run["rates"])
-        * config["max_gen"]
-        * len(run["crossover_algorithms"])
-        * len(run["mutation_algorithms"])
-        * len(run["selection_algorithms"])
-        for run in config["runs"]
+        * len(spec["rates"])
+        * len(spec["crossover_algorithms"])
+        * len(spec["mutation_algorithms"])
+        * len(spec["selection_algorithms"])
+        for spec in config["runs"]
     )
 
-    results = []  # list of data points (per generation)
-    with tqdm(total=steps, ascii=True, leave=False) as progress:
+    # with tqdm(total=steps, ascii=True, leave=False) as progress:
+    with concurrent.futures.ProcessPoolExecutor() as executor:
+        runs: dict[concurrent.futures.Future[list], int] = {}
         run = 1
         for spec in config["runs"]:
             with open(spec["file"]) as f:
@@ -141,76 +221,32 @@ def main() -> int:
                 spec["rates"],
             )
             for seed, crossover_alg, mutation_alg, selection_alg, rate in it:
-                rng = Random(seed)
-                # construct parameters
-                params = Parameters(
-                    chromosome_length=spec["key_length"],
-                    initial_population_size=config["pop_size"],
-                    max_generation_span=config["max_gen"],
-                    crossover_rate=rate["crossover"],
-                    mutation_rate=rate["mutation"],
+                future = executor.submit(
+                    single_run,
+                    run,
+                    seed,
+                    spec,
+                    config,
+                    rate,
+                    crossover_alg,
+                    mutation_alg,
+                    selection_alg,
+                    text,
+                    args.verbose,
                 )
-
-                crossover = crossover_algorithm(crossover_alg, random=rng)
-                mutation = mutation_algorithm(mutation_alg, random=rng)
-                selection = WithElitism(
-                    selection_algorithm(selection_alg, random=rng),
-                    random=rng,
-                    n_elites=config["elites"],
-                )
-
-                # create genetic algorithm iterator
-                g = genetic_algorithm(
-                    params,
-                    crossover=crossover,
-                    mutation=mutation,
-                    selection=selection,
-                    # use default fitness function
-                    fitness=ExpectedCharFrequencyEvaluator(text),
-                    rng=rng,
-                )
-
-                fitnesses = dict()
-                for gen, fitnesses in enumerate(g, 1):
-                    if progress is not None:
-                        progress.update(1)
-
-                    best_solution, best_fit = max(
-                        fitnesses.items(), key=lambda tup: -tup[1]
-                    )
-                    avg_fitness = sum(fitnesses.values()) / len(fitnesses.values())
-                    # add run result to result dataset
-                    results.append(
-                        (
-                            run,
-                            gen,
-                            best_solution,
-                            best_fit,
-                            avg_fitness,
-                            spec["file"],
-                            seed,
-                            params,
-                            crossover_alg,
-                            mutation_alg,
-                            selection_alg,
-                        )
-                    )
-
-                # display solution and decrypted cipher each run
-                if args.verbose:
-                    best_solution, best_fit = max(
-                        fitnesses.items(), key=lambda tup: -tup[1]
-                    )
-                    print(
-                        dict(
-                            solution=best_solution,
-                            fitness=best_fit,
-                            decrypted=decrypt(best_solution, text),
-                        ),
-                        end="\n\n",
-                    )
-
+                runs[future] = run
                 run += 1
+
+        results = []  # list of data points (per generation)
+        for future in tqdm(
+            concurrent.futures.as_completed(runs.keys()),
+            total=steps,
+            ascii=True,
+            leave=False,
+        ):
+            results += future.result()
+        # sorted by (run, gen)
+        results = sorted(results, key=lambda result: (result[0], result[1]))
 
     # output results in user-specified format
     printer(results)

@@ -1,11 +1,10 @@
 import abc
-import sys
-from io import TextIOBase
-import pprint
 import csv
+import pprint
+import sys
+from typing import TextIO
 
 from . import Parameters
-
 
 # (run, generation, best solution, best fitness, average fitness, file, seed, parameters, crossover, mutation, selection)
 Row = tuple[int, int, str, float, float, str, int, Parameters, str, str, str]
@@ -18,7 +17,7 @@ class Printer(abc.ABC):
 
 
 class SimplePrinter(Printer):
-    def __init__(self, stream: TextIOBase | None = None):
+    def __init__(self, stream: TextIO | None = None):
         self.stream = stream or sys.stdout
 
     def __call__(self, rows: list[Row]) -> None:
@@ -27,7 +26,7 @@ class SimplePrinter(Printer):
 
 
 class PrettyPrintPrinter(Printer):
-    def __init__(self, stream: TextIOBase | None = None):
+    def __init__(self, stream: TextIO | None = None):
         self.stream = stream or sys.stdout
 
     def __call__(self, rows: list[Row]) -> None:
@@ -43,7 +42,7 @@ class PrettyPrintPrinter(Printer):
 
 
 class CsvPrinter(Printer):
-    def __init__(self, stream: TextIOBase | None = None):
+    def __init__(self, stream: TextIO | None = None):
         self.stream = stream or sys.stdout
         self.headers = [
             "Run",
@@ -101,7 +100,7 @@ class CsvPrinter(Printer):
 
 
 class TablePrinter(Printer):
-    def __init__(self, stream: TextIOBase | None = None):
+    def __init__(self, stream: TextIO | None = None):
         """requires tabulate dependency installed"""
         from tabulate import tabulate
 
