@@ -3,6 +3,6 @@ This folder contains data files used in the experiment `.json` configurations. `
 | Data file  | Maximum key length |
 |:-----------|:-------------------|
 | Data1.txt  | 26                 |
-| Data1.txt  | 40                 |
+| Data2.txt  | 40                 |
 | sample.txt | 8 (`password`)     |
 
